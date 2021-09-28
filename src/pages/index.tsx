@@ -1,13 +1,23 @@
-import { Flex, Button, Stack } from '@chakra-ui/react';
+import { Flex, Button, Stack, useToast } from '@chakra-ui/react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 
 import { Input } from '../components/Form/Input';
+import { api } from '../services/apiClient';
+import Router from 'next/router';
+import { GetServerSideProps } from 'next';
+import { withSSRGuest } from '../utils/withSSRGuest';
 
 type SignInFormData = {
   email: string;
   password: string;
+}
+
+type SignInResponse = {
+  user: any;
+  token: string;
+  refreshToken: string;
 }
 
 const signInFormSchema = yup.object().shape({
@@ -17,14 +27,35 @@ const signInFormSchema = yup.object().shape({
   password: yup.string().required('Senha obrigatória')
 })
 
-export default function Home() {
+export default function Login() {
   const { register, handleSubmit, formState: { isSubmitting, errors } } = useForm({
     resolver: yupResolver(signInFormSchema)
   });
 
+  const toast = useToast();
+
   const handleSignIn: SubmitHandler<SignInFormData> = async (values, event) => {
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    console.log(values)
+    const { email, password } = values;
+    
+    try {
+      const response = await api.post<SignInResponse>('/sessions', { email, password });
+      await api.post('/admin/sendCode', { email }, { headers: { Authorization: `Bearer ${response.data.token}` } });
+      Router.push({
+        pathname: 'code-confirmation',
+        query: {
+          token: response.data.token,
+          refreshToken: response.data.refreshToken
+        }
+      });
+    } catch (err) {
+      toast({
+        title: 'Login/senha inválidos',
+        description: 'Por favor, insira novamente suas credenciais.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true
+      })
+    }
   }
 
   return (
@@ -61,7 +92,7 @@ export default function Home() {
         <Button
           type='submit'
           mt='6'
-          colorScheme='pink'
+          colorScheme='green'
           size='lg'
           isLoading={isSubmitting}
         >
@@ -72,3 +103,9 @@ export default function Home() {
     </Flex>
   )
 }
+
+export const getServerSideProps: GetServerSideProps = withSSRGuest(async (ctx) => {
+  return {
+    props: {}
+  }
+});

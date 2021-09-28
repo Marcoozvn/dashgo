@@ -1,5 +1,6 @@
 import { Flex, SimpleGrid, Box, Text, theme } from '@chakra-ui/react';
 import dynamic from 'next/dynamic';
+import { withSSRAuth } from '../utils/withSSRAuth';
 import { Header } from "../components/Header";
 import { Sidebar } from '../components/Sidebar';
 
@@ -83,7 +84,7 @@ export default function Dashboard() {
             borderRadius={8}
             pb='4'
           >
-            <Text fontSize='lg' mb='4'>Inscritos da semana</Text>
+            <Text fontSize='lg' mb='4'>Numero de pedidos</Text>
             <Chart type='area' height={160} options={options} series={series} />
           </Box>
           
@@ -93,7 +94,7 @@ export default function Dashboard() {
             borderRadius={8}
             pb='4'
           >
-            <Text fontSize='lg' mb='4'>Taxa de abertura</Text>
+            <Text fontSize='lg' mb='4'>Novos clientes</Text>
             <Chart type='area' height={160} options={options} series={series} />
 
           </Box>
@@ -103,3 +104,9 @@ export default function Dashboard() {
     </Flex>
   )
 }
+
+export const getServerSideProps = withSSRAuth(async (ctx) => {
+  return {
+    props: {}
+  }
+});

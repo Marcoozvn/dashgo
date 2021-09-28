@@ -8,8 +8,8 @@ export function Logo() {
       letterSpacing='tight'
       w='64'
     >
-      dashgo
-      <Text as='span' ml='1' color='pink.500'>.</Text>
+      VendasTaOn
+      <Text as='span' ml='1' color='green.500'>.</Text>
     </Text>
   )
 }
